@@ -6,36 +6,46 @@ package controlador;
 
 import java.io.IOException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.*;
+import jakarta.servlet.*;
 import modelo.Usuario;
 import dao.UsuarioDAO;
+import com.google.gson.Gson;
 
-@WebServlet("/BuscarUsuarioServlet")
+@WebServlet("/api/usuarios/cedula")
 public class BuscarUsuarioServlet extends HttpServlet {
+    
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String cedula = request.getParameter("cedulaBusqueda");
+        String cedula = request.getParameter("cedula");
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
-        UsuarioDAO usuarioDAO = new UsuarioDAO();
-        Usuario usuarios = null;
-
+        if (cedula == null || cedula.trim().isEmpty()){
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"cedula no proporcionada\"}");
+            return;
+        }
+        
         try {
-            usuarios = usuarioDAO.buscarPorCedula(cedula);
-        } catch (Exception e) {
-            e.printStackTrace(); // Puedes registrar el error o mostrar mensaje
-            request.setAttribute("mensaje", "Error al buscar el usuario");
-        }
-
-        if (usuarios != null) {
-            request.setAttribute("usuarioEncontrado", usuarios);
+        Usuario usuario = usuarioDAO.buscarPorCedula(cedula);
+        if (usuario != null){
+        String json = new Gson().toJson(usuario);
+        response.getWriter().write(json);
         } else {
-            request.setAttribute("mensaje", "Usuario no encontrado");
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\":\"Usuario no encontrado\"}");
         }
-
-        request.getRequestDispatcher("modificarUsuario.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"Error en el servidor\"}");
+        }
     }
 }

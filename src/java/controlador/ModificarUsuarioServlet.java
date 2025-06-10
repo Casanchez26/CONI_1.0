@@ -4,13 +4,13 @@
  */
 package controlador;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.*;
+import jakarta.servlet.http.*;
+import java.io.BufferedReader;
 import modelo.Usuario;
 import dao.UsuarioDAO;
 
@@ -18,65 +18,38 @@ import dao.UsuarioDAO;
  *
  * @author ansap
  */
-@WebServlet("/ModificarUsuarioServlet")
+@WebServlet("/api/usuarios/modificar")
 public class ModificarUsuarioServlet extends HttpServlet {
+    
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final Gson gson = new Gson();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        String accion = request.getParameter("accion");
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        UsuarioDAO usuarioDAO = new UsuarioDAO();
-        Usuario usuarios = new Usuario();
-
-        if ("modificar".equals(accion)) {
-
-            String nombre = request.getParameter("nombre");
-            String cedula = request.getParameter("cedula");
-            String rol = request.getParameter("rol");
-            String username = request.getParameter("username");
-            String email = request.getParameter("email");
-            String password = request.getParameter("password");
-
-            // Crear objeto Usuario
-            usuarios.setId(id);
-            usuarios.setNombre(nombre);
-            usuarios.setCedula(cedula);
-            usuarios.setRol(rol);
-            usuarios.setUsername(username);
-            usuarios.setEmail(email);
-            usuarios.setPassword(password);
-
-            boolean modificar = usuarioDAO.modificar(usuarios);
-
-            if (modificar) {
-                request.setAttribute("mensaje", "Usuario modificado correctamente.");
-            } else {
-                request.setAttribute("mensaje", "Error al modificar el usuario.");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        StringBuilder jsonBuffer = new StringBuilder();
+        String line;
+        try (BufferedReader reader = request.getReader()) {
+            while ((line = reader.readLine()) !=null){
+                jsonBuffer.append(line);
             }
-
-        } else if ("eliminar".equals(accion)) {
-
-            Usuario usuarioLogueado = (Usuario) request.getSession().getAttribute("UsuarioLogueado");
-
-            // Validar si el usuario logueado está intentando eliminarse a sí mismo
-            if (usuarioLogueado != null && usuarioLogueado.getId() == id) {
-                request.setAttribute("mensaje", "No puedes eliminar tu propio usuario.");
-                request.getRequestDispatcher("modificarUsuario.jsp").forward(request, response);
-                return;
-            }
-            boolean eliminado = usuarioDAO.eliminarUsuario(id);
-            if (eliminado) {
-                request.setAttribute("mensaje", "Usuario eliminado correctamente.");
-                // Quizás limpiar el usuario encontrado para que no muestre datos
-                request.removeAttribute("usuarioEncontrado");
-            } else {
-                request.setAttribute("mensaje", "Error al eliminar el usuario.");
-            }
-            // Redireccionar a la misma página o a una de confirmación
-            request.getRequestDispatcher("modificarUsuario.jsp").forward(request, response);
         }
+    try {
+        Usuario usuario = gson.fromJson(jsonBuffer.toString(), Usuario.class);
+        boolean modificado = usuarioDAO.modificar(usuario);
+        if (modificado){
+            response.getWriter().write("{\"mensaje\":\"Usuario modificado correctamente\"}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\":\"no se encontró el usuario para modificar}");
+        }
+    } catch (Exception e){
+        e.printStackTrace();
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().write("{\"error\":\"Datos inválidos\"}");
     }
+}
 }

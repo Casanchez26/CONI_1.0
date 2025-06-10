@@ -19,14 +19,11 @@ public class EquipoServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Habilitar CORS para preflight requests
-        addCorsHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        addCorsHeaders(response);
         response.setContentType("application/json");
 
         String estado = request.getParameter("estado");
@@ -40,7 +37,6 @@ public class EquipoServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        addCorsHeaders(response);
         response.setContentType("application/json");
 
         BufferedReader reader = request.getReader();
@@ -55,7 +51,6 @@ public class EquipoServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        addCorsHeaders(response);
         response.setContentType("application/json");
 
         String n_inventario = request.getParameter("n_inventario");
@@ -70,7 +65,6 @@ public class EquipoServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        addCorsHeaders(response);
         response.setContentType("application/json");
 
         BufferedReader reader = request.getReader();
@@ -81,11 +75,5 @@ public class EquipoServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.print("{\"success\": " + resultado + "}");
         out.flush();
-    }
-
-    private void addCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000"); // Cambia esto si usas otro puerto
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
     }
 }

@@ -17,23 +17,25 @@ public class CrearUsuarioServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String nombre = request.getParameter("nombre");
         String cedula = request.getParameter("cedula");
         String rol = request.getParameter("rol");
         String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-                        
+
         try {
             Usuario nuevoUsuario = new Usuario(nombre, cedula, rol, username, email, password);
             UsuarioDAO dao = new UsuarioDAO();
             dao.insertar(nuevoUsuario);
-            
-            response.sendRedirect("perfilAdmin.jsp");
-        } catch(Exception e) {
+
+            response.getWriter().write("{\"status\":\"ok\",\"message\":\"Usuario creado\"}");
+        } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("gestionUsuario.jsp?error=1");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        response.getWriter().write("{\"status\":\"error\",\"message\":\"Error al crear usuario\"}");
         }
-        }
-        
+    }
+
 }
