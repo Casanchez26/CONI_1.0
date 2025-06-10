@@ -38,7 +38,7 @@ const PerfilAdmin = ({ usuarioLogueado, rol }) => {
   };
 
   return (
-    <div className='body'>
+    <div>
       <header className="encabezado">
         <img src={logo} alt="Eslogan de CONI - Gestión de inventario" className="imagen-encabezado" />
         <div className="barra-superior">
@@ -56,11 +56,11 @@ const PerfilAdmin = ({ usuarioLogueado, rol }) => {
       <main className="contenido">
         <div className="container gestion-administrador">
           <div className="gestion-usuario">
-            <a href="/gestion-usuario">
+            <a href="/gestionUsuario">
               <img src={gestionarUsuarioGif} alt="Gestionar Usuario" />
             </a>
             <div className="container text-usuarios">
-              <button><a href="/gestion-usuario">Usuarios</a></button>
+              <button><a href="/gestionUsuario">Usuarios</a></button>
               <p>Administra y controla los perfiles de acceso al sistema</p>
             </div>
           </div>
